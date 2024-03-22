@@ -1,3 +1,4 @@
+package proj;
 import java.util.Arrays;
 
 public class UTXO implements Comparable<UTXO> {

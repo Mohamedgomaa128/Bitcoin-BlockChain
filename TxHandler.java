@@ -1,9 +1,10 @@
+package proj;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import Transaction.Input;
-import Transaction.Output;
+import proj.Transaction.Input;
+import proj.Transaction.Output;
 
 public class TxHandler {
 
@@ -28,45 +29,40 @@ public class TxHandler {
      */
     public boolean isValidTx(Transaction tx) {
         // IMPLEMENT THIS
-    	boolean one = true;
-    /*	
-    	for (Output out : output)
-    		if (!utxoPool.contains(out)) 
-    			return false;
-    	*/
-    	
-    	//----------------------------------------------
     	ArrayList<Input> input = tx.getInputs();
     	ArrayList<Output> output = tx.getOutputs();
+    	
+    	
+    	/*
+    	 *  if you have input(hash, index) and you want to deal with them as previous transaction output for the interface of output(address, value)
+    	 *  i will use UTXO as an intermediate tool to convert input to output
+    	 */
+    	
+    	//----------------------------------------------
+    	// (1)
     	for (Input in : input)
     		if (!utxoPool.contains(new UTXO(in.prevTxHash,in.outputIndex)))
     			return false;
     	
-    	
     	//----------------------------------------------
-    	// still neads modification for the transaction pool part
+    	// (2)
     	for (int i = 0; i < input.size(); i++) {
     		Input in = input.get(i);
     		byte [] raw = tx.getRawDataToSign(i);
+    		// since all the inputs are in the UTXO pool so we can make benefit of UTXO trick i have mentioned before 
     		Output out = utxoPool.getTxOutput(new UTXO(in.prevTxHash, in.outputIndex));
     		PublicKey addressOfMe = out.address;
     		byte[] signature = in.signature;
     	
     		if (!Crypto.verifySignature(addressOfMe, raw, signature))
-    			return false;
-    		
-    		//PublicKey addressOfMe = in.prevTxHash.(in.outputIndex);
-    		//TransactionPool tp = new TransactionPool();
-    		//Transaction prevOne = tp.getTransaction(in.prevTxHash);
-    		//Output op = prevOne.getOutput(in.outputIndex);
-    		
-    		//PublicKey addressOfMe =in.prevTxHash.(in.outputIndex);
-    		
-    		
+    			return false;	
     	}
     		
     	//--------------------------------------------------
-    	//no UTXO is claimed multiple times 
+    	// (3)
+    	/*
+    	 * map UTXO to index, and visited array to check if there is multiple usage for UTXO
+    	 */
     	ArrayList<UTXO> utxoArr = utxoPool.getAllUTXO();
     	HashMap<UTXO, Integer> hashMap = new HashMap<UTXO, Integer>();
     	for (int i = 0; i < utxoArr.size(); i++)
@@ -83,11 +79,15 @@ public class TxHandler {
     		
     	
     	//-------------------------------------------------
-    	
+    	// (4)
     	for (Output out : output)
     		if (dcmp(out.value, 0.0) == 1)
     			return false;
-    	//------------------------------
+    	
+    	
+    	
+    	//---------------------------------------------------
+    	// (5)
     	double sumOutput = 0.0;
     	for (Output out : output)
         	sumOutput += out.value;
@@ -96,7 +96,7 @@ public class TxHandler {
     	for (Input in : input)
     		sumInput += utxoPool.getTxOutput(new UTXO(in.prevTxHash, in.outputIndex)).value;
     	
-    	if(dcmp(sumInput, output) > -1)
+    	if(dcmp(sumInput, sumOutput) > -1)
     		return false;
     	
     	return true;
@@ -107,6 +107,7 @@ public class TxHandler {
 
 
     private int dcmp(double v1, double v2) {
+    	// this method compares two double values 
     	double EPS = 1e-9; 
     	
     	if (Math.abs(v1 - v2) < EPS)
@@ -123,8 +124,8 @@ public class TxHandler {
      * transaction for correctness, returning a mutually valid array of accepted transactions, and
      * updating the current UTXO pool as appropriate.
      */
-    public Transaction[] handleTxs(Transaction[] possibleTxs) {
+   /* public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
     }
-
+*/
 }
