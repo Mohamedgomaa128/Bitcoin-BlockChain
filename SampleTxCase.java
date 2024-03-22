@@ -81,6 +81,8 @@ public class SampleTxCase {
 		 * let's sign with our private key to prove the ownership of the
 		 * first public key specified by the tx1 output
 		 */
+		// the recepient is the one who sign that he has the public key said before
+		// as saying on a transaction , its mine , if the sign is correct then ok , else he is an adversary
 		byte[] sig = sign(keyPair.getPrivate(), tx2.getRawDataToSign(0));
 		tx2.addSignature(sig, 0);		
 		tx2.finalize();
@@ -101,7 +103,8 @@ public class SampleTxCase {
 		
 	}
 
-	public static KeyPair generateNewKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
+	public static KeyPair generateNewKeyPair() 
+			throws NoSuchAlgorithmException, NoSuchProviderException {
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		keyGen.initialize(2048);
 		return keyGen.genKeyPair();

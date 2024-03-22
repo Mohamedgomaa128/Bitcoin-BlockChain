@@ -243,6 +243,7 @@ public class Transaction {
     }
 
     public void finalize() {
+    	//updates the hash according to changing in the data 
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(getRawTx());
