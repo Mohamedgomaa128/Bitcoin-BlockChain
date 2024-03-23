@@ -71,6 +71,7 @@ public class TxHandler {
     	boolean[] vist = new boolean[utxoArr.size()];
     	for (Input in : input) {
     		UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
+    		
     		int ind = hashMap.get(utxo);
     		if (vist[ind])
     			return false;
@@ -80,9 +81,12 @@ public class TxHandler {
     	
     	//-------------------------------------------------
     	// (4)
-    	for (Output out : output)
+    	
+    	for (Output out : output) {
+    		//System.out.println(dcmp(out.value, 0.0));
     		if (dcmp(out.value, 0.0) == 1)
     			return false;
+    	}
     	
     	
     	
@@ -96,7 +100,8 @@ public class TxHandler {
     	for (Input in : input)
     		sumInput += utxoPool.getTxOutput(new UTXO(in.prevTxHash, in.outputIndex)).value;
     	
-    	if(dcmp(sumInput, sumOutput) > -1)
+    	//System.out.println(dcmp(sumInput, sumOutput));
+    	if(dcmp(sumInput, sumOutput) == 1)
     		return false;
     	
     	return true;
@@ -107,7 +112,7 @@ public class TxHandler {
 
 
     private int dcmp(double v1, double v2) {
-    	// this method compares two double values 
+    	// this method compares two double values to avoid precision problems 
     	double EPS = 1e-9; 
     	
     	if (Math.abs(v1 - v2) < EPS)
@@ -126,6 +131,8 @@ public class TxHandler {
      */
    /* public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
-    }
-*/
+    	
+    	
+    }*/
+
 }
