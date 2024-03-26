@@ -108,16 +108,14 @@ public class BlockChain {
      * block
      */
     public BlockChain(Block genesisBlock) {
-        // IMPLEMENT THIS
-    	//this.genesisBlock = new BlockNode(genesisBlock);
+        this.curLevelBlocks = new ArrayList<BlockNode>();
     	
-    	this.curLevelBlocks = new ArrayList<BlockNode>();
-    	
+        
     	BlockNode gen = new BlockNode(genesisBlock, null, new ArrayList<BlockNode>(), 1);
     	curLevelBlocks.add(gen);
     	this.currentLevel = 1;
     	this.maxHeight = 1;
-    	System.out.println(BlockArrange);
+    	//System.out.println(BlockArrange);
     	gen.myNumber = ++BlockArrange;
     	
     	
@@ -127,11 +125,25 @@ public class BlockChain {
     	map = new HashMap<>();
     	this.map.put(new ByteArrayWrapper(genesisBlock.getHash()), gen);
     	this.doubleSpendingOffMap = new HashMap<>();
+    	
+    	
+    	
+    	//coin base >> 0, output(0)
     	UTXO u = new UTXO(genesisBlock.getCoinbase().getHash(), 0);
     	this.doubleSpendingOffMap.put(u, false);
     	gen.myUtxoPool.addUTXO(u, genesisBlock.getCoinbase().getOutput(0));
     	
-    	// add the transactions UTxo if contain
+    	
+    	//trans , loop, i, output(i)
+    	// add the transactions UTXOs if contain
+    	ArrayList<Transaction> list = genesisBlock.getTransactions();
+    	for (int i = 0; i < list.size(); i++) {
+    		Transaction t = list.get(i);
+    		UTXO uu = new UTXO(t.getHash(), i);
+        	gen.myUtxoPool.addUTXO(uu, t.getOutput(i));
+        	doubleSpendingOffMap.put(uu, false);
+    	}
+    	
     }
 
     
@@ -144,7 +156,7 @@ public class BlockChain {
     			// add all my children
     			cur.addAll(b.getChildren());
     			
-    			// pass my UTXOs to my Children when the node removed 
+    			// pass my UTXOs to my Children when the node removed , because the possible nodes that can benifit from my UTXOs are my grandchildrens
     			for (BlockNode bb : b.getChildren())
     				for (UTXO u : b.myUtxoPool.getAllUTXO())
     					bb.myUtxoPool.addUTXO(new UTXO(u.getTxHash(), u.getIndex()), b.myUtxoPool.getTxOutput(u));
@@ -154,7 +166,7 @@ public class BlockChain {
     		}
     		
     		//System.out.println("maxHeight - currentLevel = " + (maxHeight - currentLevel));
-    		System.out.println("cur level blocks " + curLevelBlocks);
+    		//System.out.println("cur level blocks " + curLevelBlocks);
     		
     		curLevelBlocks = cur;
     		currentLevel++;
@@ -247,14 +259,18 @@ public class BlockChain {
     public boolean addBlock(Block block) {
 
     	
-    	
+    	/* put all possible UTXOs
+    	 * loop on transactions and check validity
+    	 * check for height 
+    	 * if ok >> add the block and update the block chain and add the UTXOs
+    	 * 
+    	 */
     	
     	//---------------------------------------------------
     	//if pass genis
     	if (block.getPrevBlockHash() == null)
     		return false;
     	//----------------------------------------------------
-    	
     	
     	
     	// check for transactions first
@@ -267,91 +283,28 @@ public class BlockChain {
     	//-------------------------------------------------------------------
     	
     	// i think we should repeat this step till we reach the first block in my chain so i can make use of all utxo
-    	//ArrayList<Transaction> trans = parentNode.myBlock.getTransactions();
+    	
     	UTXOPool utxoPool = new UTXOPool();
-    	//Transaction coinBase = parentNode.myBlock.getCoinbase();
     	
-    	//check if transactions are all found here 
-    	/*for (Transaction t : block.getTransactions())
-    		if (!tPool.getTransactions().contains(t))
-    			return false;
-    	*/
-    	//two checking 
-    /*	if (!coinBase.isCoinbase())
-    		return false;
-    	if (coinBase.getInputs().size() != 0)
-    		return false;
-    	*/
-    	
-    	//-------------------------------------------------------------------
-    	
-    	
-    	
-    	
-    	// add coin base UTXO
-    	/*ArrayList<Output> coinOutput = coinBase.getOutputs();
-
-    	UTXO uu = new UTXO(coinBase.getHash(), 0);
-		
-		Boolean booll = doubleSpendingOffMap.get(uu);
-		if (booll == null)
-			return false;
-		
-		if (booll == false)
-			utxoPool.addUTXO(uu, coinOutput.get(0));
-    	
-    	*/
-    	
-    	
-    /*	
-    	for (int i = 0; i < coinOutput.size(); i++) {
-    		UTXO u = new UTXO(coinBase.getHash(), i);
-    		
-    		Boolean bool = doubleSpendingOffMap.get(u);
-			if (bool == null)
-				return false;
-			
-			if (bool == false)
-				utxoPool.addUTXO(u, coinOutput.get(i));
-    	}
-    	*/
-    	//-------------------------------------------------------------------
-    	
-    	// all UTXO of parent
-    	// add outputs of previous block as UTXO 
-    /*	for (Transaction t : trans) {
-    		ArrayList<Output> output = t.getOutputs();
-    		
-    		for (int i = 0; i < output.size(); i++) {
-    			UTXO u = new UTXO(t.getHash(), i);
-    			Boolean bool = doubleSpendingOffMap.get(u);
-    			if (bool == null)
-    				return false;
-    			
-    			if (bool == false)
-    				utxoPool.addUTXO(u, output.get(i));
-    		}
-    	}
-    	*/
     	// all UTXOs of grandparents 
     	BlockNode bb = parentNode;
-    	//if (bb.myBlock.getPrevBlockHash() != null) {
-	    	while (bb != null) {
-	    		// Recursively add the remaining transaction in each Block Node to choose from them 
-	    		
-	    		for (UTXO u : bb.myUtxoPool.getAllUTXO()) {
-	    			Boolean bool = doubleSpendingOffMap.get(u);
-	    			
-	    			if (bool == false)
-	    				utxoPool.addUTXO(u, bb.myUtxoPool.getTxOutput(u));
-	    		}
-	    		
-	    		if (bb.myBlock.getPrevBlockHash() != null)
-	    			bb = map.get(new ByteArrayWrapper(bb.myBlock.getPrevBlockHash()));
-	    		else
-	    			bb = null;
-	    	}
-    	//}    	
+    	
+    	while (bb != null) {
+    		// Recursively add the remaining transaction in each Block Node to choose from them 
+    		
+    		for (UTXO u : bb.myUtxoPool.getAllUTXO()) {
+    			Boolean bool = doubleSpendingOffMap.get(u);
+    			
+    			if (bool == false)
+    				utxoPool.addUTXO(u, bb.myUtxoPool.getTxOutput(u));
+    		}
+    		
+    		if (bb.myBlock.getPrevBlockHash() != null)
+    			bb = map.get(new ByteArrayWrapper(bb.myBlock.getPrevBlockHash()));
+    		else
+    			bb = null; // break;
+    	}
+	
     	//---------------------------------------------------------------------
     	
     	TxHandler hand = new TxHandler(utxoPool);
@@ -360,18 +313,16 @@ public class BlockChain {
     		if (!hand.isValidTx(block.getTransactions().get(i)))
     			return false;
     	
-    	
-    	
+    	// transactions are correct    	
     	int blockLevel = parentNode.level + 1;
     	
-    	
-    	//System.out.println("max height  " + maxHeight);
-    	//System.out.println("block level " + blockLevel);
-    	//System.out.println("result " + (maxHeight - CUT_OFF_AGE));
+    	//height check
     	if (blockLevel <= maxHeight - CUT_OFF_AGE)
     		return false;
     	
-    	// may be used again
+    	//height is correct 
+    	
+    	//now add the node and update the blockchain
     	BlockNode newNode = new BlockNode(block, parentNode, new ArrayList<BlockNode>(), blockLevel);
     	
     	newNode.myNumber = ++BlockArrange;
@@ -380,14 +331,13 @@ public class BlockChain {
     	
     	this.map.put(new ByteArrayWrapper(block.getHash()), newNode);
 
+    	
+    	// update current level of blocks
     	updateCurrentBlocks();
     	
-    	/*for (Transaction t : block.getTransactions())
-    		newNode.myUtxoPool.addUTXO(new UTXO(t.getHash(), ), null);
-    	*/
-    	//parentNode.addChild(new BlockNode(block));
     	
-    	ArrayList<Transaction> newNodeTrans = newNode.myBlock.getTransactions();// add my UTXOS to my block Node
+    	// add my UTXOS to my block Node
+    	ArrayList<Transaction> newNodeTrans = newNode.myBlock.getTransactions();
     	for (Transaction t : newNodeTrans) {
     		ArrayList<Output> output = t.getOutputs();
     		
@@ -397,17 +347,20 @@ public class BlockChain {
     			doubleSpendingOffMap.put(u, false);
     		}
     	}    	
+    	
+    	// add my coinbase transaction to UTXOPool
     	Transaction coTrans = newNode.myBlock.getCoinbase();
     	UTXO uu = new UTXO(coTrans.getHash(), 0);
     	newNode.myUtxoPool.addUTXO(uu, coTrans.getOutput(0));
     	doubleSpendingOffMap.put(uu, false);
     	
     	
+    	//remove the transactions form the transaction pool
     	for (Transaction t : block.getTransactions())
     		tPool.removeTransaction(t.getHash());
-    	// add the block UTXO to the transactoin
     	
-    	System.out.println("added successfully " + newNode.myNumber + " at level " + newNode.level);
+    	
+    	//System.out.println("added successfully " + newNode.myNumber + " at level " + newNode.level);
     	return true;
     }
     
