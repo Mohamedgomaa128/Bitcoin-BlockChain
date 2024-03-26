@@ -17,6 +17,10 @@ public class TxHandler {
     public TxHandler(UTXOPool utxoPool) {
         this.utxoPool = new UTXOPool(utxoPool);
     }
+    
+    public UTXOPool getUTXOPool() {
+    	return this.utxoPool;
+    }
 
     /**
      * @return true if:
@@ -132,17 +136,36 @@ public class TxHandler {
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
     	
-    	ArrayList<Transaction> validTransactions = new ArrayList<Transaction>();
+    	ArrayList<Transaction> validTransactions1 = new ArrayList<Transaction>();
     	for (int i = 0; i < possibleTxs.length; i++)
     		if (isValidTx(possibleTxs[i]))
-    		validTransactions.add(possibleTxs[i]);
+    		validTransactions1.add(possibleTxs[i]);
     	
     	//-------------------
+    	// here we may think in greedy algorithm or dp coin change problem 
+    	int n = validTransactions1.size();
+    	int numOfConflicts[] = new int[n];
+    	//ArrayList<ArrayList<Integer>> indecesOfConflicts = new ArrayList<ArrayList<Integer>>();
+    	
+    	ArrayList<Transaction> validTransactions = new ArrayList<Transaction>();
+    	
+    	for (int i = 0; i < n; i++)
+    		for (int j = i + 1; j < n; j++)
+    			if (confilct(validTransactions1.get(i), validTransactions1.get(j)))
+    				numOfConflicts[i]++;
     	
     	
     	
     	
-    	//-------------
+    	
+    	//---------------------------------------------------
+    	for (int i = 0; i < n; i++)
+    		if (numOfConflicts[i] == 0)
+    			validTransactions.add(validTransactions1.get(i));
+    	
+    	
+    	
+    	//----------------------------------------------------
     	//the last part , the updating of the utxo pool
     	for (Transaction t : validTransactions) {
     		ArrayList<Input> input = t.getInputs();
@@ -167,4 +190,50 @@ public class TxHandler {
     	return trans;
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // assume the only conflict is double spending 
+	private boolean confilct(Transaction transaction1, Transaction transaction2) {
+		//double spending 
+		ArrayList<Input> t1Inputs = transaction1.getInputs();
+		ArrayList<Input> t2Inputs = transaction2.getInputs();
+		//ArrayList<Output> t1Outputs = transaction1.getOutputs();
+		//ArrayList<Output> t2Outputs = transaction2.getOutputs();
+		
+		for (Input i1 : t1Inputs)
+			for (Input i2 : t2Inputs)
+				if (i1.equals(i2))
+					return true;
+		
+		
+		
+		
+		return false;
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
