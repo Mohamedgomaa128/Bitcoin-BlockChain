@@ -1,50 +1,220 @@
-# Contribution in adapted version of assignments provided by the Princeton Bitcoin book authors
-Welcome to the repository for my adapted version of an assignment from the "Bitcoin and Cryptocurrency Technologies" book by the authors from Princeton University. This project aims to provide an in-depth understanding of a specific concept within Bitcoin and blockchain technology through practical implementation in Java.
+# Bitcoin Blockchain Web Application
 
+A full-stack web application that turns a simplified Java Bitcoin blockchain implementation into an interactive blockchain dashboard.
 
-## Table of Contents
+The project keeps the original blockchain fundamentals intact: blocks, transactions, RSA signatures, UTXOs, transaction validation, a pending transaction pool, and block mining. On top of that core logic, it adds a Spring Boot REST API and a React interface for creating wallets, sending transactions, mining blocks, and exploring the chain visually.
 
-- [Introduction](#introduction)
-- [Assignment Overview](#assignment-overview)
-- [Installation](#installation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+![Dashboard](Bitcoin%20screenshots/dashboard.png)
 
+## Highlights
 
+- Full-stack blockchain demo built with Spring Boot and React.
+- Original Java blockchain logic preserved under `backend/src/main/java/com/blockchain/core`.
+- RSA-backed wallet generation.
+- UTXO-based balance calculation.
+- Signed transactions with validation before entering the transaction pool.
+- Block mining from pending transactions.
+- Blockchain viewer with block details and transaction inspection.
+- WebSocket-ready backend for live block and transaction notifications.
+- Clean dashboard UI for portfolio and demo use.
 
-## Introduction
+## Screenshots
 
-This repository contains my adaptation of an assignment from the "Bitcoin and Cryptocurrency Technologies" book by Arvind Narayanan, Joseph Bonneau, Edward Felten, Andrew Miller, and Steven Goldfeder. The goal is to enhance understanding and practical application of a specific aspect of Bitcoin technology.
+### Dashboard
 
-## Assignment Overview
-### Assignment: Bitcoin BlockChain
-- **Objective:** This is a programming assignment to help make you familiar with some aspects of the Bitcoin blockchain.
-Note that many things here are different from the Bitcoin protocol. This is just a simplified version
-- **Key Concepts:** transactions, blockchain, UTXO
+![Dashboard overview](Bitcoin%20screenshots/dashboard.png)
 
-## Installation
-To run the assignment locally, follow these steps:
+![Dashboard activity](Bitcoin%20screenshots/dashboard%202.png)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/princeton-bitcoin-assignment.git
-   cd princeton-bitcoin-assignment
-2. Ensure you have Java installed. You can download it from the [official Java website](https://www.oracle.com/java/technologies/javase-downloads.html).
+### Blockchain Explorer
 
-3. Compile the Java files:
-   ```bash
-   javac -d bin src/*.java
+![Blockchain page](Bitcoin%20screenshots/blockchain.png)
 
-## Contributing
+![Blockchain details](Bitcoin%20screenshots/blockchains.png)
 
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request. Ensure your contributions align with the project's coding standards and objectives.
+### Wallets
 
-## License
+![Wallet manager](Bitcoin%20screenshots/wallets.png)
 
-This project is licensed under the MIT License.
+![Wallet balances](Bitcoin%20screenshots/wallets%201.png)
 
-## Acknowledgements
+### Transactions
 
-- The authors of "Bitcoin and Cryptocurrency Technologies" for providing the foundational material for this assignment.
-- [Princeton University](https://www.cs.princeton.edu/~arvindn/bitcoinbook/) for offering the course and resources that inspired this project.
+![Transactions page](Bitcoin%20screenshots/Transactions.png)
+
+### Mining
+
+![Mining page](Bitcoin%20screenshots/Mining.png)
+
+## Tech Stack
+
+### Backend
+
+- Java 17
+- Spring Boot
+- Spring Web
+- Spring WebSocket
+- Jakarta Validation
+- Maven
+
+### Frontend
+
+- React
+- Vite
+- React Router
+- Axios
+- STOMP + SockJS
+- Lucide React
+- Framer Motion
+
+## Core Concepts Implemented
+
+- Blocks with previous hash references
+- Coinbase transactions
+- SHA-256 block and transaction hashing
+- RSA public/private key wallets
+- Digital signature verification
+- UTXO pool management
+- Pending transaction pool
+- Transaction validation
+- Mining new blocks onto the max-height chain
+- In-memory blockchain state
+
+## Project Structure
+
+```text
+Bitcoin-BlockChainNew/
+  backend/
+    pom.xml
+    src/main/java/com/blockchain/
+      BitcoinBlockchainApplication.java
+      config/
+      controller/
+      core/
+      dto/
+      service/
+      util/
+
+  frontend/
+    package.json
+    vite.config.js
+    src/
+      api/
+      components/
+      context/
+      hooks/
+      utils/
+
+  Bitcoin screenshots/
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Java 17 or newer
+- Maven
+- Node.js and npm
+
+### 1. Run the Backend
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+The backend API will run on:
+
+```text
+http://localhost:8080
+```
+
+### 2. Run the Frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will run on:
+
+```text
+http://localhost:5173
+```
+
+## API Endpoints
+
+### Blockchain
+
+```text
+GET  /api/blockchain/status
+GET  /api/blockchain/blocks
+GET  /api/blockchain/blocks/{hash}
+POST /api/blockchain/mine
+```
+
+### Wallets
+
+```text
+GET  /api/wallets
+POST /api/wallets
+GET  /api/wallets/{id}
+GET  /api/wallets/{id}/utxos
+```
+
+### Transactions
+
+```text
+GET  /api/transactions/pending
+GET  /api/transactions/{hash}
+POST /api/transactions
+```
+
+## Example Workflow
+
+1. Start the Spring Boot backend.
+2. Start the React frontend.
+3. Open the dashboard.
+4. Create one or more wallets.
+5. Send BTC from the genesis wallet to another wallet.
+6. Mine a block.
+7. Confirm that balances, pending transactions, and chain height update.
+
+## Verification
+
+The project was verified with:
+
+```bash
+cd backend
+mvn clean compile
+```
+
+```bash
+cd frontend
+npm run build
+```
+
+An API smoke test was also completed for:
+
+- Getting blockchain status
+- Creating a wallet
+- Creating a signed transaction
+- Mining a block
+- Confirming pending transactions are cleared after mining
+
+## Important Notes
+
+This is an educational blockchain implementation, not a production cryptocurrency.
+
+- Data is stored in memory only.
+- Restarting the backend resets the blockchain.
+- There is no peer-to-peer network layer.
+- There is no proof-of-work difficulty target.
+- The focus is on blockchain data structures, UTXOs, signatures, validation, and full-stack visualization.
+
+## Background
+
+The original version was a simplified Java blockchain assignment inspired by concepts from Bitcoin and Cryptocurrency Technologies. This version wraps the original logic in a modern web application to make the behavior easier to explore, demonstrate, and present.
